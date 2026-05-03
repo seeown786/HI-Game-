@@ -1,64 +1,84 @@
-‎<!DOCTYPE html>
-‎<html>
-‎<head>
-‎  <title>Angry Bird Style Game</title>
-‎  <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js"></script>
-‎</head>
-‎<body>
-‎<canvas id="gameCanvas"></canvas>
-‎
-‎<script>
-‎const { Engine, Render, World, Bodies, Mouse, MouseConstraint, Constraint } = Matter;
-‎
-‎const engine = Engine.create();
-‎const world = engine.world;
-‎
-‎const canvas = document.getElementById("gameCanvas");
-‎
-‎const render = Render.create({
-‎    canvas: canvas,
-‎    engine: engine,
-‎    options: {
-‎        width: 800,
-‎        height: 500,
-‎        wireframes: false
-‎    }
-‎});
-‎
-‎// Ground
-‎const ground = Bodies.rectangle(400, 480, 810, 40, { isStatic: true });
-‎
-‎// Bird
-‎let bird = Bodies.circle(150, 300, 20);
-‎
-‎// Slingshot
-‎let sling = Constraint.create({
-‎    pointA: { x: 150, y: 300 },
-‎    bodyB: bird,
-‎    stiffness: 0.05
-‎});
-‎
-‎// Target block
-‎const box = Bodies.rectangle(600, 400, 50, 50);
-‎
-‎World.add(world, [ground, bird, sling, box]);
-‎
-‎// Mouse control
-‎const mouse = Mouse.create(render.canvas);
-‎const mouseConstraint = MouseConstraint.create(engine, {
-‎    mouse: mouse
-‎});
-‎
-‎World.add(world, mouseConstraint);
-‎
-‎// Release bird
-‎document.addEventListener("mouseup", () => {
-‎    sling.bodyB = null;
-‎});
-‎
-‎Render.run(render);
-‎Engine.run(engine);
-‎</script>
-‎
-‎</body>
-‎</html>
+<!DOCTYPE html>
+<html lang="ur">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Angry Bird Style Game</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js"></script>
+    <style>
+        body { margin: 0; padding: 0; display: flex; justify-content: center; align-items: center; height: 100vh; background-color: #222; }
+        canvas { border: 2px solid #fff; max-width: 100%; height: auto; }
+    </style>
+</head>
+<body>
+
+<script>
+const { Engine, Render, Runner, World, Bodies, Mouse, MouseConstraint, Constraint } = Matter;
+
+// 1. Engine setup
+const engine = Engine.create();
+const world = engine.world;
+
+// 2. Renderer setup
+const render = Render.create({
+    element: document.body,
+    engine: engine,
+    options: {
+        width: 800,
+        height: 600,
+        wireframes: false,
+        background: '#87CEEB' // Sky Blue background
+    }
+});
+
+Render.run(render);
+const runner = Runner.create();
+Runner.run(runner, engine);
+
+// 3. Ground aur Obstacles
+const ground = Bodies.rectangle(400, 580, 810, 40, { isStatic: true, render: { fillStyle: '#2ecc71' } });
+const box1 = Bodies.rectangle(600, 530, 50, 50, { render: { fillStyle: '#e67e22' } });
+const box2 = Bodies.rectangle(600, 480, 50, 50, { render: { fillStyle: '#e67e22' } });
+
+// 4. Bird aur Slingshot
+let bird = Bodies.circle(150, 450, 20, { render: { fillStyle: '#e74c3c' } });
+let sling = Constraint.create({
+    pointA: { x: 150, y: 450 },
+    bodyB: bird,
+    stiffness: 0.1,
+    length: 10
+});
+
+World.add(world, [ground, box1, box2, bird, sling]);
+
+// 5. Mouse Control (Sling khinchne ke liye)
+const mouse = Mouse.create(render.canvas);
+const mouseConstraint = MouseConstraint.create(engine, {
+    mouse: mouse,
+    constraint: {
+        stiffness: 0.2,
+        render: { visible: false }
+    }
+});
+World.add(world, mouseConstraint);
+
+// 6. Bird Release logic
+let isFired = false;
+document.addEventListener("mouseup", () => {
+    if (mouseConstraint.body === bird) {
+        isFired = true;
+    }
+});
+
+Matter.Events.on(engine, 'afterUpdate', function() {
+    if (isFired && bird.position.x > 170) {
+        sling.bodyB = null; // Sling tod do jab bird agay nikal jaye
+    }
+});
+
+// Canvas resizing handle
+render.mouse = mouse;
+</script>
+
+</body>
+</html>
