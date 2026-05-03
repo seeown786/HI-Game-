@@ -1,0 +1,64 @@
+‎<!DOCTYPE html>
+‎<html>
+‎<head>
+‎  <title>Angry Bird Style Game</title>
+‎  <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js"></script>
+‎</head>
+‎<body>
+‎<canvas id="gameCanvas"></canvas>
+‎
+‎<script>
+‎const { Engine, Render, World, Bodies, Mouse, MouseConstraint, Constraint } = Matter;
+‎
+‎const engine = Engine.create();
+‎const world = engine.world;
+‎
+‎const canvas = document.getElementById("gameCanvas");
+‎
+‎const render = Render.create({
+‎    canvas: canvas,
+‎    engine: engine,
+‎    options: {
+‎        width: 800,
+‎        height: 500,
+‎        wireframes: false
+‎    }
+‎});
+‎
+‎// Ground
+‎const ground = Bodies.rectangle(400, 480, 810, 40, { isStatic: true });
+‎
+‎// Bird
+‎let bird = Bodies.circle(150, 300, 20);
+‎
+‎// Slingshot
+‎let sling = Constraint.create({
+‎    pointA: { x: 150, y: 300 },
+‎    bodyB: bird,
+‎    stiffness: 0.05
+‎});
+‎
+‎// Target block
+‎const box = Bodies.rectangle(600, 400, 50, 50);
+‎
+‎World.add(world, [ground, bird, sling, box]);
+‎
+‎// Mouse control
+‎const mouse = Mouse.create(render.canvas);
+‎const mouseConstraint = MouseConstraint.create(engine, {
+‎    mouse: mouse
+‎});
+‎
+‎World.add(world, mouseConstraint);
+‎
+‎// Release bird
+‎document.addEventListener("mouseup", () => {
+‎    sling.bodyB = null;
+‎});
+‎
+‎Render.run(render);
+‎Engine.run(engine);
+‎</script>
+‎
+‎</body>
+‎</html>
